@@ -3,6 +3,8 @@
 **双击即用的单文件网页生成器**：填 5 个长度 → 实时 3D 预览 → 导出可直接进 Bambu Studio 的 STL / 3MF。
 离线运行（three.js 已内联），不联网、不上传、不需要 Node / Python。
 
+**在线使用（GitHub Pages）**：<https://tianqiqwq.github.io/five-stage-gen/>
+
 ![等轴视图](preview/01-iso.png)
 
 ```
@@ -161,6 +163,8 @@ node tools/make-samples.mjs
 ```text
 five-stage-gen/
 ├─ 五级台生成器.html          ← 主交付物：单文件离线网页（双击打开）
+├─ index.html                ← GitHub Pages 入口（与五级台生成器.html 同内容，构建时镜像）
+├─ LICENSE                   ← MIT
 ├─ src/index.html             ← 页面外壳 + CSS + UI 结构
 ├─ src/app/
 │  ├─ 00-core.js              ← 参数、派生、校验、URL 状态
@@ -188,5 +192,6 @@ five-stage-gen/
 
 ## 10. 许可
 
+- 本项目代码采用 **MIT License**，见 [`LICENSE`](LICENSE)。
 - three.js r147：MIT，见 `vendor/THREE-LICENSE.txt`。
-- 几何、界面、工具代码为本项目交付内容；参考模型数据归你所有。
+- 参考模型数据归你所有；仓库内的 3MF / STL 仅为你自己的模型导出件。

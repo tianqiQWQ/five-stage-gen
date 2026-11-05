@@ -22,7 +22,8 @@ const DEFAULTS = {
   out: join(ROOT, '五级台生成器.html'),
   'app-dir': join(ROOT, 'src', 'app'),
   'vendor-dir': join(ROOT, 'vendor'),
-  vendor: true
+  vendor: true,
+  mirror: null
 };
 const VENDOR_SCRIPTS = ['three.min.js', 'OrbitControls.js'];
 const P_VENDOR = '<!--INLINE_VENDOR-->';
@@ -45,9 +46,10 @@ function parseArgs(argv) {
       case '--out': o.out = resolve(next()); break;
       case '--app-dir': o['app-dir'] = resolve(next()); break;
       case '--vendor-dir': o['vendor-dir'] = resolve(next()); break;
+      case '--mirror': o.mirror = resolve(next()); break;
       case '--no-vendor': o.vendor = false; break;
       case '-h': case '--help':
-        console.log('Usage: node tools/build.mjs [--src file] [--out file] [--app-dir dir] [--vendor-dir dir] [--no-vendor]');
+        console.log('Usage: node tools/build.mjs [--src file] [--out file] [--app-dir dir] [--vendor-dir dir] [--no-vendor] [--mirror file]');
         process.exit(0); break;
       default: fail('unknown option: ' + a);
     }
@@ -106,12 +108,17 @@ async function main() {
 
   await mkdir(dirname(o.out), { recursive: true });
   await writeFile(o.out, html, 'utf8');
+  if (o.mirror) {
+    await mkdir(dirname(o.mirror), { recursive: true });
+    await writeFile(o.mirror, html, 'utf8');
+  }
   const size = Buffer.byteLength(html);
   console.log('\n  vendor:');
   vendorUsed.forEach((v) => console.log('    ' + v.name.padEnd(18) + String(v.bytes).padStart(9) + ' B'));
   console.log('  app:');
   appUsed.forEach((v) => console.log('    ' + v.name.padEnd(18) + String(v.bytes).padStart(9) + ' B'));
   console.log('\nBUILD OK: ' + o.out);
+  if (o.mirror) console.log('MIRROR OK: ' + o.mirror);
   console.log('  size: ' + size.toLocaleString('en-US') + ' bytes (' + (size / 1024).toFixed(1) + ' KiB) in ' +
     (performance.now() - t0).toFixed(0) + ' ms');
 }
