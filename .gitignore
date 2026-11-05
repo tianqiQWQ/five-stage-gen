@@ -1,0 +1,9 @@
+# 开发期产物
+tools/out/
+tools/.chrome-profile*/
+
+# 通用
+node_modules/
+*.log
+.DS_Store
+Thumbs.db

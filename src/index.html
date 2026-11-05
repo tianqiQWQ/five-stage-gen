@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#eef1f4">
+<title>五级台生成器 · 昆虫标本针插定位台</title>
+<style>
+:root{
+  --bg:#eef1f4; --panel:#fbfbfc; --card:#ffffff; --line:#e4e8ec; --line2:#eef1f4;
+  --ink:#1f2937; --ink2:#4b5563; --muted:#8a94a0; --amber:#d97706; --amber2:#f59e0b;
+  --teal:#0f766e; --red:#dc2626; --green:#15803d; --shadow:0 10px 30px rgba(15,23,42,.08);
+  --mono:ui-monospace,"Cascadia Mono","SF Mono",Consolas,monospace;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0; background:
+    radial-gradient(1200px 700px at 75% -10%, #ffffff 0%, rgba(255,255,255,0) 60%),
+    var(--bg);
+  color:var(--ink);
+  font:14px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+  -webkit-font-smoothing:antialiased; overflow:hidden;
+}
+#app{display:flex; height:100vh; height:100dvh; width:100vw}
+#panel{
+  width:380px; min-width:380px; height:100%; display:flex; flex-direction:column;
+  background:var(--panel); border-right:1px solid var(--line); z-index:5;
+}
+.brand{display:flex; align-items:center; gap:11px; padding:15px 18px 11px}
+.brand-mark{
+  width:38px; height:38px; border-radius:11px; flex:none;
+  display:grid; place-items:center; color:#fff; font-weight:700; font-size:18px;
+  background:linear-gradient(145deg,#f59e0b,#d97706 60%,#b45309);
+  box-shadow:0 6px 14px rgba(217,119,6,.28);
+}
+.brand h1{font-size:16px; margin:0; letter-spacing:.4px}
+.brand p{margin:2px 0 0; font-size:12px; color:var(--muted); letter-spacing:.6px}
+.brand .ver{margin-left:auto; font:11px var(--mono); color:var(--muted); border:1px solid var(--line); border-radius:20px; padding:2px 8px}
+.scroll{flex:1; overflow:auto; padding:0 14px 8px; scrollbar-width:thin}
+.card{background:var(--card); border:1px solid var(--line); border-radius:13px; padding:11px 11px 9px; margin:0 0 9px; box-shadow:0 1px 0 rgba(15,23,42,.02)}
+.card-h{display:flex; align-items:baseline; gap:8px; margin:0 2px 7px}
+.card-h h2{font-size:12.5px; margin:0; letter-spacing:.6px; font-weight:650}
+.card-h .hint{font-size:11px; color:var(--muted); margin-left:auto}
+.levels{display:flex; flex-direction:column; gap:4px}
+.lv{display:grid; grid-template-columns:14px 58px 1fr 26px; align-items:center; gap:8px; padding:3px 4px; border-radius:9px}
+.lv:hover{background:#f7f9fb}
+.chip{width:10px; height:10px; border-radius:50%; box-shadow:0 0 0 3px rgba(0,0,0,.035)}
+.lv label{font-size:12.5px; color:var(--ink2)}
+.lv input{
+  width:100%; height:30px; border:1px solid var(--line); border-radius:8px; background:#fcfdfe;
+  padding:0 8px; font:600 13.5px var(--mono); color:var(--ink); text-align:right; outline:none;
+  transition:border-color .15s, box-shadow .15s, background .15s;
+}
+.lv input:hover{border-color:#cfd6dd}
+.lv input:focus{border-color:var(--amber2); box-shadow:0 0 0 3px rgba(245,158,11,.16); background:#fff}
+.lv input.bad{border-color:var(--red); box-shadow:0 0 0 3px rgba(220,38,38,.12); background:#fff7f7}
+.unit{font:11px var(--mono); color:var(--muted)}
+.row-tools{display:flex; justify-content:flex-end; margin-top:8px}
+.grid2{display:grid; grid-template-columns:1fr 1fr; gap:8px 10px}
+.fld{display:flex; flex-direction:column; gap:3px}
+.fld label{font-size:11.5px; color:var(--muted); display:flex; justify-content:space-between; gap:4px}
+.fld label span{font:10.5px var(--mono); color:#aab3bd}
+.fld input{
+  height:29px; border:1px solid var(--line); border-radius:8px; background:#fcfdfe; padding:0 8px;
+  font:600 12.5px var(--mono); color:var(--ink); text-align:right; outline:none;
+}
+.fld input:hover{border-color:#cfd6dd}
+.fld input:focus{border-color:var(--amber2); box-shadow:0 0 0 3px rgba(245,158,11,.16); background:#fff}
+.fld input.bad{border-color:var(--red); background:#fff7f7}
+.readout .ro-row{display:flex; align-items:baseline; justify-content:space-between; padding:2px 2px; font-size:12px; color:var(--ink2)}
+.readout .ro-row b{font:600 12px var(--mono); color:var(--ink)}
+.readout .ro-row.small b{font-weight:500; color:var(--ink2)}
+.status-inline{display:flex; align-items:center; gap:8px; font-size:12.5px; font-weight:600; padding:0 2px 2px}
+.status-inline .muted{font:10.5px var(--mono); color:var(--muted); margin-left:auto; font-weight:400}
+.dot{width:9px; height:9px; border-radius:50%; background:#cbd5e1; flex:none}
+.dot.ok{background:var(--green); box-shadow:0 0 0 3px rgba(21,128,61,.13)}
+.dot.err{background:var(--red); box-shadow:0 0 0 3px rgba(220,38,38,.13)}
+.msgs{list-style:none; margin:0 0 4px; padding:0; display:flex; flex-direction:column; gap:4px; max-height:86px; overflow:auto}
+.msgs:empty{display:none}
+.msgs li{font-size:11.5px; line-height:1.4; padding:5px 8px; border-radius:7px; background:#fff7ed; color:#9a3412; border:1px solid #fed7aa}
+.msgs li.err{background:#fef2f2; color:#991b1b; border-color:#fecaca}
+.msgs li.warn{background:#fffbeb; color:#92400e; border-color:#fde68a}
+.actions{padding:9px 14px 12px; border-top:1px solid var(--line); background:linear-gradient(180deg,rgba(251,251,252,.4),#fbfbfc); display:flex; flex-direction:column; gap:7px}
+.actions-row{display:flex; gap:7px}
+button{font-family:inherit; cursor:pointer; border-radius:9px; border:1px solid transparent; transition:transform .06s, background .15s, border-color .15s, box-shadow .15s; user-select:none}
+button:active{transform:translateY(1px)}
+button.primary{
+  flex:1; height:38px; font-size:13.5px; font-weight:650; color:#fff; letter-spacing:.3px;
+  background:linear-gradient(180deg,#f59e0b,#d97706); box-shadow:0 5px 12px rgba(217,119,6,.25);
+}
+button.primary:hover{filter:brightness(1.04)}
+button.primary.alt{background:linear-gradient(180deg,#14b8a6,#0f766e); box-shadow:0 5px 12px rgba(15,118,110,.22)}
+button.ghost{
+  flex:1; height:32px; font-size:12px; color:var(--ink2); background:#fff; border-color:var(--line);
+}
+button.ghost:hover{border-color:#cfd6dd; background:#f8fafc}
+button:disabled{opacity:.45; cursor:not-allowed; transform:none}
+#stage{position:relative; flex:1; min-width:0; height:100%; overflow:hidden}
+#canvas{position:absolute; inset:0; width:100%; height:100%; display:block; touch-action:none}
+#toolbar{position:absolute; top:14px; right:14px; display:flex; flex-direction:column; gap:8px; align-items:flex-end; z-index:4}
+.tb-group{
+  display:flex; gap:2px; padding:4px; border-radius:12px; background:rgba(255,255,255,.82);
+  border:1px solid rgba(226,232,240,.9); box-shadow:0 8px 22px rgba(15,23,42,.07); backdrop-filter:blur(8px);
+}
+.tb-group button{
+  height:27px; padding:0 9px; font-size:12px; color:#475569; background:transparent; border-radius:8px; white-space:nowrap;
+}
+.tb-group button:hover{background:#f1f5f9}
+.tb-group button.on{background:#1f2937; color:#fff; box-shadow:0 3px 8px rgba(15,23,42,.18)}
+#hint{
+  position:absolute; left:16px; bottom:14px; z-index:3; font-size:11.5px; color:#7b8794;
+  background:rgba(255,255,255,.66); padding:5px 10px; border-radius:20px; border:1px solid rgba(226,232,240,.8);
+}
+#badge{
+  position:absolute; right:16px; bottom:14px; z-index:3; font:10.5px var(--mono); color:#94a3b8;
+  background:rgba(255,255,255,.55); padding:3px 8px; border-radius:6px;
+}
+#toast{
+  position:fixed; left:50%; bottom:26px; transform:translateX(-50%) translateY(14px); z-index:50;
+  background:#111827; color:#fff; font-size:12.5px; padding:9px 16px; border-radius:10px;
+  opacity:0; pointer-events:none; transition:opacity .2s, transform .2s; max-width:80vw; text-align:center;
+}
+#toast.show{opacity:.95; transform:translateX(-50%) translateY(0)}
+#toast.err{background:#b91c1c}
+@media (max-width: 980px){
+  body{overflow:auto}
+  #app{flex-direction:column}
+  #panel{width:100%; min-width:0; height:auto; max-height:52vh; order:2; border-right:0; border-top:1px solid var(--line)}
+  #stage{order:1; height:48vh; flex:none}
+  .brand{padding:12px 14px 10px}
+  .brand-mark{width:34px;height:34px;border-radius:10px;font-size:16px}
+  .scroll{padding:0 10px 6px}
+  .actions{padding:8px 10px 10px}
+  #toolbar{top:10px; right:10px; gap:6px}
+  .tb-group{padding:3px; border-radius:10px}
+  .tb-group button{height:25px; padding:0 7px; font-size:11.5px}
+  #hint{display:none}
+}
+@media (max-width: 520px){
+  .grid2{grid-template-columns:1fr 1fr}
+  .tb-group button{padding:0 6px}
+  #badge{display:none}
+  #toolbar{left:8px; right:8px; align-items:flex-end}
+  .tb-group{flex-wrap:wrap; justify-content:flex-end; max-width:100%}
+}
+</style>
+</head>
+<body>
+<div id="app">
+  <aside id="panel">
+    <header class="brand">
+      <div class="brand-mark">五</div>
+      <div>
+        <h1>五级台生成器</h1>
+        <p>昆虫标本 · 针插定位台</p>
+      </div>
+      <span class="ver" id="ver">v1.0</span>
+    </header>
+
+    <div class="scroll">
+      <section class="card">
+        <div class="card-h">
+          <h2>五级长度</h2>
+          <span class="hint">入口面 → 大孔最远壁</span>
+        </div>
+        <div id="levels" class="levels"></div>
+        <div class="row-tools"><button class="ghost" id="btnResetLen" style="flex:none;padding:0 12px">恢复参考值</button></div>
+      </section>
+
+      <section class="card">
+        <div class="card-h"><h2>常用尺寸</h2><span class="hint">mm</span></div>
+        <div id="sizes" class="grid2"></div>
+      </section>
+
+      <section class="card readout">
+        <div class="ro-row"><span>外形（自动）</span><b id="roSize">–</b></div>
+        <div class="ro-row"><span>体积</span><b id="roVol">–</b></div>
+        <div class="ro-row"><span>PLA 实心重量</span><b id="roWeight">–</b></div>
+        <div class="ro-row small"><span>3 墙 + 15% 填充估算</span><b id="roWeight2">–</b></div>
+      </section>
+    </div>
+
+    <div class="actions">
+      <div class="status-inline">
+        <span class="dot" id="dot"></span><span id="stText">正在生成…</span>
+        <span class="muted" id="stStats"></span>
+      </div>
+      <ul id="msgs" class="msgs"></ul>
+      <div class="actions-row">
+        <button class="primary" id="btnSTL">导出 STL</button>
+        <button class="primary alt" id="btn3MF">导出 3MF</button>
+      </div>
+      <div class="actions-row">
+        <button class="ghost" id="btnJSON">参数 JSON</button>
+        <button class="ghost" id="btnTXT">参数 TXT</button>
+        <button class="ghost" id="btnShot">截图</button>
+      </div>
+    </div>
+  </aside>
+
+  <main id="stage">
+    <canvas id="canvas"></canvas>
+    <div id="toolbar">
+      <div class="tb-group" id="viewGroup">
+        <button data-view="iso" class="on">等轴</button>
+        <button data-view="front">前视</button>
+        <button data-view="top">俯视</button>
+        <button data-view="side">侧视</button>
+      </div>
+      <div class="tb-group" id="toggleGroup">
+        <button id="tglSection">剖面</button>
+        <button id="tglDims" class="on">标注</button>
+        <button id="tglPins">示意针</button>
+        <button id="tglWire">线框</button>
+        <button id="tglAuto">旋转</button>
+        <button id="tglPose">使用姿态</button>
+      </div>
+    </div>
+    <div id="hint">拖拽旋转 · 滚轮缩放 · 右键平移</div>
+    <div id="badge">WebGL · 离线</div>
+  </main>
+</div>
+<div id="toast"></div>
+
+<!--INLINE_VENDOR-->
+<!--INLINE_APP-->
+</body>
+</html>
